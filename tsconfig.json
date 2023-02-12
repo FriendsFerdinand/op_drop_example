@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "lib": ["ES2022", "DOM"],
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "Node16",
+    "module": "ES6",
+    "target": "ES6"
+  }
+}
