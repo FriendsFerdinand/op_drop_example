@@ -23,6 +23,11 @@ Install dependencies:
 pnpm i
 ```
 
+Run bitcoind:
+```
+bitcoind --regtest --rpcuser=devnet --rpcpassword=devnet --txindex
+```
+
 Run script:
 ```
 pnpm start

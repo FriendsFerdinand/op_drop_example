@@ -16,9 +16,14 @@ import { blockchainRequest, opDropASM } from "./bitcoin.js";
   let block = await blockchainRequest("getblock", [blocks[0]]);
   let tx = await blockchainRequest("getrawtransaction", [block.tx[0], true]);
 
+  // Generating asm of Bitcoin script
+  // @params
+  // hash of a Stacks address or contract
+  // public key of the recipient (in case of sBTC, the shared wallet)
+  // FORMAT: `<data> OP_DROP OP_DUP OP_HASH160 <recipientPublicKey> OP_EQUALVERIFY OP_CHECKSIG`
   let asm = opDropASM(
     Buffer.from("0000000000000000000000000000000000000000","hex"),
-     crypto.hash160(recipientBtcSigner.publicKey)
+    crypto.hash160(recipientBtcSigner.publicKey)
   );
 
   const script = bScript.fromASM(asm);
@@ -29,7 +34,8 @@ import { blockchainRequest, opDropASM } from "./bitcoin.js";
 
   const fundingAmount = 100_000_000;
   
-  // Funding transaction
+  // Sending to shared public key
+  // Wallet only need to be aware of the address to send funds with the data attached
   let psbt = new Psbt({ network });
   psbt.addInput({
     hash: tx.txid,
@@ -68,6 +74,7 @@ import { blockchainRequest, opDropASM } from "./bitcoin.js";
 
   psbt.signInput(0, recipientBtcSigner);
 
+  // regenerate redeem script
   psbt.finalizeInput(0, (index, input, script) => {
     const partialSigs = input.partialSig;
     const inputScript = bScript.compile([
@@ -90,5 +97,5 @@ import { blockchainRequest, opDropASM } from "./bitcoin.js";
   await blockchainRequest("generatetoaddress", [5, senderPayment.address]);
   
   tx = await blockchainRequest("getrawtransaction", [resultTxId, true]);
-  console.log(tx);
+  console.log("Succesfully sent funds to public key");
 })();

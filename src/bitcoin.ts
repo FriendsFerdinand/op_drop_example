@@ -61,31 +61,6 @@ export function encodeExpiration(expiration?: number): Buffer {
   return typeof expiration === 'undefined' ? CSV_DELAY_BUFF : script.number.encode(expiration);
 }
 
-export function htlcASM(
-  hash: Uint8Array,
-  senderPublicKey: Uint8Array,
-  recipientPublicKey: Uint8Array,
-  expiration: number,
-  swapper: number
-) {
-  const swapperHex = numberToLE(swapper);
-  return `
-  ${swapperHex} OP_DROP
-	OP_IF
-    OP_SHA256 ${bytesToHex(hash)}
-    OP_EQUALVERIFY
-		${bytesToHex(recipientPublicKey)}
-	OP_ELSE
-		${encodeExpiration(expiration).toString('hex')}
-		OP_CHECKSEQUENCEVERIFY
-		OP_DROP
-		${bytesToHex(senderPublicKey)}
-	OP_ENDIF
-	OP_CHECKSIG`
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 export function opDropASM(
   data: Uint8Array,
   recipientPublicKey: Uint8Array,
@@ -94,31 +69,6 @@ export function opDropASM(
   OP_DUP OP_HASH160 ${bytesToHex(recipientPublicKey)} OP_EQUALVERIFY OP_CHECKSIG`
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-export function generateHTLCScript(
-  hash: Uint8Array,
-  senderPublicKey: Uint8Array,
-  recipientPublicKey: Uint8Array,
-  expiration: number,
-  swapper: number
-): Buffer {
-  const asm = htlcASM(hash, senderPublicKey, recipientPublicKey, expiration, swapper);
-  const output = script.fromASM(asm);
-  return output;
-}
-
-export function generateHTLCAddress(
-  hash: Uint8Array,
-  senderPublicKey: Uint8Array,
-  recipientPublicKey: Uint8Array,
-  expiration: number,
-  swapper: number
-): payments.Payment {
-  const network = btcNetwork;
-  const script = generateHTLCScript(hash, senderPublicKey, recipientPublicKey, expiration, swapper);
-  const payment = payments.p2sh({ redeem: { output: script, network }, network });
-  return payment;
 }
 
 export function generateRandomHexString(numBytes: number) {
